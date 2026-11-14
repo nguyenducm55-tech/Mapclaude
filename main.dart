@@ -98,12 +98,35 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
+  String voiceInfo = '';
+
+  Future<bool> setupTts() async {
+    bool found = false;
+    try {
+      final en = (await tts.getEngines) as List;
+      if (en.contains('com.google.android.tts')) await tts.setEngine('com.google.android.tts');
+    } catch (_) {}
+    try {
+      await tts.setLanguage('vi-VN');
+      final vs = (await tts.getVoices) as List;
+      for (final v in vs) {
+        final loc = '${v['locale']}'.toLowerCase().replaceAll('_', '-');
+        if (loc.startsWith('vi')) {
+          await tts.setVoice({'name': '${v['name']}', 'locale': '${v['locale']}'});
+          voiceInfo = '${v['name']}';
+          found = true;
+          break;
+        }
+      }
+      await tts.setSpeechRate(0.5);
+    } catch (_) {}
+    return found;
+  }
+
   Future<void> init() async {
     WakelockPlus.enable();
-    await tts.setLanguage('vi-VN');
-    await tts.setSpeechRate(0.5);
-    final ok = await tts.isLanguageAvailable('vi-VN');
-    if (!(ok == true || ok == 1)) setState(() => noVi = true);
+    final found = await setupTts();
+    if (!found) setState(() => noVi = true);
     final sp = await SharedPreferences.getInstance();
     userLim = sp.getInt('lim') ?? 50;
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -402,6 +425,7 @@ class _HomeState extends State<Home> {
                       padding: EdgeInsets.only(bottom: 8),
                       child: Text('Máy chưa có giọng Tiếng Việt nên app chỉ phát chuông. Cài đặt > Văn bản sang giọng nói > Google > tải Tiếng Việt.', style: TextStyle(fontSize: 12, color: Colors.deepOrange)),
                     ),
+                  if (!noVi && voiceInfo.isNotEmpty) Text('Giọng đọc: $voiceInfo', style: const TextStyle(fontSize: 10)),
                   Row(children: [
                     Column(children: [
                       Text('${speed.round()}', style: TextStyle(fontSize: 54, height: 1, fontWeight: FontWeight.w800, color: over3 ? Colors.red : null)),
