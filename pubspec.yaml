@@ -1,0 +1,18 @@
+name: tro_ly_tai_xe
+description: Tro ly tai xe xe may - ban do, dan duong va canh bao bang giong noi Tieng Viet
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  geolocator: ^13.0.0
+  flutter_tts: ^4.0.0
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+  wakelock_plus: ^1.2.0
+flutter:
+  uses-material-design: true
