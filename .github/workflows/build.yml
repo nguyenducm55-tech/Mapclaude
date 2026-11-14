@@ -1,0 +1,30 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Tao du an va chep ma nguon
+        run: |
+          flutter create --org vn.taixe --project-name tro_ly_tai_xe --platforms android app
+          cp "$(ls main.dart* | head -1)" app/lib/main.dart
+          cp "$(ls pubspec.yaml* | head -1)" app/pubspec.yaml
+          M=app/android/app/src/main/AndroidManifest.xml
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/><uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/><uses-permission android:name="android.permission.WAKE_LOCK"/><queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries><application|' $M
+          sed -i 's|android:label="[^"]*"|android:label="Trợ lý tài xế"|' $M
+      - name: Build APK
+        run: cd app && flutter pub get && flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tro-ly-tai-xe-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
